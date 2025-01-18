@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de gerenciamento de comandas</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <header>
+    <div class="adicionar-container">
+      <img
+        src="/adicionar.png"
+        onclick="adicionarComanda()"
+        id="adicionarComanda"
+      />
+      <span class="subtitulo">Adicionar Comanda</span>
+    </div>
+    <h1>Restaurante Felix</h1>
+  </header>
+  <body onload="pegarComandas()">
+    <main>
+      <section id="comandas">
+        <!--aqui vai todas as comandas vindas do server-->
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/script.js"></script>
+  </body>
+</html>
