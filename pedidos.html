@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0" />-->
+    <div id="logo">
+      <img src="https://www.pousadafelix.com.br/images/logo.png" />
+    </div>
+  </head>
+  <body>
+    <section id="caixaCardapio">
+      <article id="botoescaixa">
+        <a href="#lanches"><button class="botoes">Lanches</button></a>
+        <a href="#alacarte"><button class="botoes">Alacarte</button></a>
+        <a href="#pizzas"><button class="botoes">Pizzas</button></a>
+        <a href="#bebidas"><button class="botoes">Bebidas</button></a>
+      </article>
+      <div id="lanches" class="render-cards">
+        <u><h1>Lanches</h1></u>
+      </div>
+      <div id="alacarte" class="render-cards">
+        <u><h1>Alacarte</h1></u>
+      </div>
+      <div id="pizzas" class="render-cards">
+        <u><h1>Pizzas</h1></u>
+      </div>
+      <div id="bebidas" class="render-cards">
+        <u><h1>Bebidas</h1></u>
+      </div>
+    </section>
+
+    <script>
+      fetch("/Produtos")
+        .then((menu) => menu.json())
+        .then((menu) => {
+          menu.forEach((produto) => {
+            if (produto.tipoProduto == "lanches") {
+              document.getElementById("lanches").innerHTML += renderizarProduto(
+                produto._id,
+                produto.nomeProduto,
+                produto.ingredientes,
+                produto.valor
+              );
+            }
+            if (produto.tipoProduto == "alacarte") {
+              document.getElementById("alacarte").innerHTML +=
+                renderizarProduto(
+                  produto._id,
+                  produto.nomeProduto,
+                  produto.ingredientes,
+                  produto.valor
+                );
+            }
+            if (produto.tipoProduto == "pizzas") {
+              document.getElementById("pizzas").innerHTML += renderizarProduto(
+                produto._id,
+                produto.nomeProduto,
+                produto.ingredientes,
+                produto.valor
+              );
+            }
+            if (produto.tipoProduto == "bebidas") {
+              document.getElementById("bebidas").innerHTML += renderizarProduto(
+                produto._id,
+                produto.nomeProduto,
+                produto.ingredientes,
+                produto.valor
+              );
+            }
+          });
+        });
+      function renderizarProduto(id, nome, ingredientes, valor) {
+        return `
+        <div class="cardProdutos" id="${id}">
+          <h2 class="nomeProdutos">${nome}</h2>
+          <div class="ingredientes">${ingredientes}</p>
+          <div class="valor">R$ ${valor}</div>
+         
+        </div>
+        `;
+      }
+    </script>
+  </body>
+  <style>
+    body {
+      background-color: rgb(255, 239, 218);
+      overflow-x: hidden;
+      margin: 0;
+    }
+    .adicionar {
+      position: absolute;
+      display: flex;
+      right: 0px;
+      justify-content: center;
+      align-items: center;
+      top: 0px;
+      max-width: 20%;
+      height: auto;
+
+      flex-direction: column;
+    }
+    .botaosomar {
+      background-color: rgb(247, 243, 243);
+    }
+    .botaosubtrair {
+      background-color: rgb(247, 243, 243);
+    }
+    .botaodeletar {
+      background-color: rgb(230, 47, 47);
+      width: 70%;
+      height: auto;
+    }
+    .botaoadicionar {
+      background-color: rgb(18, 161, 18);
+      width: 70%;
+      height: auto;
+    }
+    .contador {
+      position: absolute;
+      display: flex;
+      right: 0px;
+      justify-content: center;
+      align-items: end;
+      top: 50%;
+      max-width: 12%;
+      height: auto;
+      margin: 1%;
+      flex-direction: row;
+      overflow-wrap: break-word;
+      flex-wrap: wrap;
+      border-radius: 12px;
+    }
+    #iconecart {
+      position: absolute;
+      display: flex;
+      right: 0px;
+      justify-content: end;
+      align-items: start;
+      top: 0px;
+      max-width: 20%;
+      height: auto;
+      margin: 2%;
+      flex-direction: row;
+    }
+    #logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    h1 {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      font-size: 50px;
+      color: black;
+    }
+    #caixaCardapio {
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+      height: auto;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .render-cards {
+      background-color: rgb(255, 251, 246);
+      display: grid;
+      position: relative;
+      grid-template-columns: subgrid;
+      width: 60%;
+      height: auto;
+      padding: 1%;
+      margin: 1%;
+      border: 1px solid black;
+      color: black;
+      border-radius: 12px;
+      flex-direction: row;
+    }
+
+    .cardProdutos {
+      display: flex;
+      justify-content: start;
+      position: relative;
+      padding: 1%;
+      border: 1px solid black;
+      margin-bottom: 1%;
+      flex-direction: column;
+      border-radius: 12px;
+      background-color: #fff;
+      flex-direction: column;
+    }
+    .nomeProdutos {
+      font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+      font-style: oblique;
+    }
+    .ingredientes {
+      max-width: 50%;
+      height: auto;
+    }
+    .valor {
+      color: green;
+      font-weight: bold;
+    }
+    #botoescaixa {
+      max-width: 35%;
+      height: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: row;
+      position: relative;
+      gap: 1%;
+      padding: 1%;
+      text-decoration: none;
+    }
+    .botoes {
+      display: flex;
+      background-color: antiquewhite;
+      width: 130px;
+      height: auto;
+      padding: 3%;
+      justify-content: center;
+      border-radius: 12px;
+      border: 1px solid black;
+      position: relative;
+      font-size: large;
+      text-decoration: none;
+      margin-right: 5%;
+      padding: 1%;
+    }
+    a {
+      text-decoration: none;
+    }
+  </style>
+</html>
