@@ -3,37 +3,37 @@ header {
   width: 100%;
   height: auto;
   display: flex;
-  justify-content: space-between; /* Alinha os elementos nas extremidades */
-  align-items: center; /* Centraliza verticalmente */
-  padding: 10px; /* Adiciona um espaçamento interno */
-  position: relative; /* Permite centralizar o h1 */
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 10px; 
+  position: relative; 
 }
 
 .adicionar-container {
   display: flex;
-  align-items: center; /* Alinha a imagem e o subtítulo verticalmente */
-  gap: 10px; /* Espaçamento entre a imagem e o subtítulo */
+  align-items: center; 
+  gap: 10px; 
 }
 
 #adicionarComanda {
-  width: 40px; /* Ajuste o tamanho da imagem conforme necessário */
+  width: 40px; 
   height: auto;
-  cursor: pointer; /* Adiciona um cursor de ponteiro para indicar que é clicável */
+  cursor: pointer; 
 }
 
 .subtitulo {
-  font-size: 18px; /* Tamanho do subtítulo */
+  font-size: 18px; 
   font-family: Arial, Helvetica, sans-serif;
-  color: #000; /* Cor do texto */
+  color: #000;
 }
 
 h1 {
   font-size: 40px;
   font-family: Arial, Helvetica, sans-serif;
-  margin: 0; /* Remove margens padrão do h1 */
-  position: absolute; /* Posiciona o h1 absolutamente */
-  left: 50%; /* Move o h1 para o centro horizontal */
-  transform: translateX(-50%); /* Ajusta o posicionamento para centralizar */
+  margin: 0; 
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%); 
 }
 p {
   font-size: large;
@@ -44,7 +44,7 @@ p {
 #comandas {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px; /* Espaçamento entre as comandas */
+  gap: 10px; 
   margin-top: 1%;
   max-width: 100%;
   max-height: 100%;
@@ -122,23 +122,23 @@ li {
 .botoes {
   display: flex;
   flex-direction: row;
-  justify-content: space-between; /* Espaça os botões igualmente */
-  align-items: flex-end; /* Alinha os botões na parte inferior */
-  margin-top: auto; /* Empurra os botões para o final da comanda */
-  width: 100%; /* Ocupa toda a largura da comanda */
-  padding: 10px; /* Adiciona um espaçamento interno */
+  justify-content: space-between; 
+  align-items: flex-end; 
+  margin-top: auto; 
+  width: 100%; 
+  padding: 10px; 
 }
 .comandas {
   display: flex;
   flex-direction: column;
-  max-width: 15%; /* Largura fixa para cada comanda */
-  /* Garante que não ultrapasse o tamanho definido */
-  height: auto; /* Altura ajustável conforme o conteúdo */
+  max-width: 15%; 
+  
+  height: auto;
   background-color: #f6f4f0;
   margin: 1%;
   border-radius: 12px;
-  box-sizing: border-box; /* Garante que padding e borda não aumentem o tamanho */
-  padding: 10px; /* Adiciona um espaçamento interno */
+  box-sizing: border-box; 
+  padding: 10px; 
   position: relative;
   flex-grow: 1;
   margin-bottom: 20px;
@@ -185,15 +185,15 @@ button[type="button"] {
 }
 .icone-container {
   display: flex;
-  justify-content: flex-end; /* Alinha o ícone à direita */
-  margin-top: 10px; /* Espaçamento acima do ícone */
+  justify-content: flex-end; 
+  margin-top: 10px; 
 }
 
 .iconelapis {
-  width: 10%; /* Ajuste o tamanho conforme necessário */
+  width: 10%; 
   height: auto;
   float: right;
-  cursor: pointer; /* Adiciona um cursor de ponteiro para indicar que é clicável */
+  cursor: pointer; 
 }
 .pedido-anterior {
   display: flex;
