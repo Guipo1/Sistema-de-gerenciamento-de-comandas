@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+  </head>
+  <body>
+    <h1>Seja bem vindo!</h1>
+    <p>Efetue seu login</p>
+    <label for="nome">Usuário:</label>
+    <input
+      type="text"
+      name="nome"
+      id="nome"
+      placeholder="Digite seu nome de usuario"
+    /><br />
+    <label for="senha">Senha:</label>
+    <input
+      type="password"
+      name="senha"
+      id="senha"
+      placeholder="Digite sua senha"
+    /><br />
+    <button onclick="logar()">Logar</button>
+    <button onclick="cadastrar()">Realizar cadastro</button>
+    <div id="camposcadastro"></div>
+    <script>
+      var logado = false;
+      function logar() {
+        const senhaUsuario = document.getElementById("senha").value.trim();
+        const nomeUsuario = document.getElementById("nome").value.trim();
+        const dadosLogin = {};
+        if (senhaUsuario) {
+          dadosLogin.senha = senhaUsuario;
+        }
+        if (nomeUsuario) {
+          dadosLogin.usuario = nomeUsuario;
+        }
+        fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dadosLogin),
+        })
+          .then((dados) => dados.json())
+          .then((response) => {
+            if (response.token) {
+              window.localStorage.setItem("token", response.token);
+              // Redireciona para a página principal após o login.
+              // O token será enviado nos headers das próximas requisições.
+              window.location.href = `/index/${response.token}`; // ou outra página protegida
+            } else {
+              alert(
+                response.message ||
+                  "Falha no login. Verifique suas credenciais."
+              );
+            }
+          });
+      }
+      function cadastrar() {
+        document.getElementById("camposcadastro").innerHTML = `
+        <input type="text" name="nomeUsuario" id="nomeUsuario" placeholder="Digite seu nome de usuario">
+        <input type="password" name="senhaUsuario" id="senhaUsuario" placeholder="Digite sua senha">
+        <input type="text" name="nomeEstabelecimento" id="nomeEstabelecimento" placeholder="Digite o nome do seu estabelecimento">
+        <button onclick="finalizarCadastro()">Finalizar cadastro</button>
+        `;
+      }
+      function finalizarCadastro() {
+        const nomeUsuario = document.getElementById("nomeUsuario").value.trim();
+        const senhaUsuario = document
+          .getElementById("senhaUsuario")
+          .value.trim();
+        const nomeEstabelecimento = document
+          .getElementById("nomeEstabelecimento")
+          .value.trim();
+        const dadosCadastro = {};
+        if (nomeUsuario) {
+          dadosCadastro.usuario = nomeUsuario;
+        }
+        if (senhaUsuario) {
+          dadosCadastro.senha = senhaUsuario;
+        }
+        if (nomeEstabelecimento) {
+          dadosCadastro.nomeEstabelecimento = nomeEstabelecimento;
+        }
+        fetch("/cadastro", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dadosCadastro),
+        })
+          .then((dados) => dados.json())
+          .then((response) => {
+            if (response.token) {
+              window.localStorage.setItem("token", response.token);
+              window.localStorage.setItem(
+                "nomeEstabelecimento",
+                response.nomeEstabelecimento
+              );
+              // Redireciona após o cadastro bem-sucedido
+              window.location.href = `/index/${response.token}`; // ou outra página protegida
+            } else {
+              alert(response.message || "Falha no cadastro.");
+            }
+          });
+      }
+    </script>
+    <style></style>
+  </body>
+</html>
