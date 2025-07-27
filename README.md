@@ -16,9 +16,9 @@ Este projeto foi desenvolvido utilizando:
 * Ferramentas importantes: Mongoose, Crypto, Https, Cors, Path, Jwt, CookieParser, Tailwind.
 
 ## Como rodar o projeto
-*Clone o projeto: git clone https://github.com/Guipo1/Sistema-de-gerenciamento-de-comandas.git
-*Acesse a pasta "comandas": cd comandas
-*Instale todas as dependencias necessarias: npm install
-*Rode o comando para inicializar o servidor: npm run start
+* Clone o projeto: git clone https://github.com/Guipo1/Sistema-de-gerenciamento-de-comandas.git
+* Acesse a pasta "comandas": cd comandas
+* Instale todas as dependencias necessarias: npm install
+* Rode o comando para inicializar o servidor: npm run start
 É precisso se atentar ao fato de que o servidor utiliza o protocolo https, porem por segurança, ele não esta aqui no github. Para executar o servidor normalmente é necesario criar uma pasta chamada "cert", nela devera conter o arquivo "server.crt" e outro arquivo chamado "server.key"
-*Outro aviso importante é que as credencias para cadastro no banco de dados tambem nao foram fornecidas por motivos de segurança, por isso lembre-se tambem de criar um arquivo na pasta comandas chamado ".env", nele você deve criar as duas variaveis para salvar suas credencias, são elas: "DB_USUARIO" e "DB_SENHA"
+* Outro aviso importante é que as credencias para cadastro no banco de dados tambem nao foram fornecidas por motivos de segurança, por isso lembre-se tambem de criar um arquivo na pasta comandas chamado ".env", nele você deve criar as duas variaveis para salvar suas credencias, são elas: "DB_USUARIO" e "DB_SENHA"
