@@ -131,8 +131,8 @@ li {
 .comandas {
   display: flex;
   flex-direction: column;
-  width: 200px; /* Largura fixa para cada comanda */
-  max-width: 200px; /* Garante que não ultrapasse o tamanho definido */
+  max-width: 15%; /* Largura fixa para cada comanda */
+  /* Garante que não ultrapasse o tamanho definido */
   height: auto; /* Altura ajustável conforme o conteúdo */
   background-color: #f6f4f0;
   margin: 1%;
@@ -160,6 +160,8 @@ li {
   margin-bottom: 10px;
   border: 1px solid #ddd;
   border-radius: 10px;
+  display: flex;
+  position: relative;
 }
 
 #botaoAdicionarInput {
@@ -195,19 +197,41 @@ button[type="button"] {
 }
 .pedido-anterior {
   display: flex;
+  position: relative;
   width: 100%;
   height: auto;
   background-color: #bfbdb8;
+  text-align: center;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
-  border: 1px solid #000;
   border-radius: 12px;
-  position: relative;
-  padding: 1%;
-
-  text-align: center;
+  margin-bottom: 1%;
 }
 .pedidos-anteriores {
   margin-bottom: 20px;
 }
+.nome-pedido-alterar {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  left: 20%;
+  top: 10px;
+}
+.obs-pedido-alterar {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  left: 20%;
+}
+.quantidade-alterar {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  left: 20%;
+}
+h3 {
+  display: flex;
+  position: relative;
+}
+
