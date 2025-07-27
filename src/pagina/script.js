@@ -1,7 +1,27 @@
 const socket = io();
 const comandasRenderizar = document.getElementById("comandas");
+const token = window.localStorage.getItem("token");
+
+
+socket.on("connect", () => {
+ 
+  fetch(`/titulo/${token}`) 
+    .then((res) => res.json())
+    .then((nomeEstabelecimento) => {
+      socket.emit("joinRoom", nomeEstabelecimento);
+      const titulo = document.getElementById("titulo");
+      titulo.innerText = nomeEstabelecimento;
+    })
+    .catch((err) => console.error("Erro ao entrar na sala do socket:", err));
+});
+
 function pegarComandas() {
-  fetch("/VisualizarComandas", {
+  if (!token) {
+    alert("Token não encontrado, por favor, faça o login novamente.");
+    window.location.href = "/";
+    return;
+  }
+  fetch(`/VisualizarComandas/${token}`, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -11,10 +31,10 @@ function pegarComandas() {
     .then((response) => {
       for (const comanda of response) {
         // Criar uma string com todos os itens do pedido
-        const pedidos = comanda.pedido
+        const pedidos = comanda.pedidos
           .map((pedido) => pedido.quantidade + " " + pedido.nomePedido)
           .join(", " + "<br>");
-
+        // alert(JSON.stringify(comanda));
         comandasRenderizar.innerHTML += `
           <div id="${comanda._id}" class="comandas">
             <h2><b>${comanda.mesa}</b></h2>
@@ -41,7 +61,7 @@ function pegarComandas() {
     });
 }
 function removerComanda(comandaId) {
-  fetch(`/RemoverComanda/${comandaId}`, {
+  fetch(`/RemoverComanda/${comandaId}/${token}`, {
     method: "DELETE",
     headers: {
       Accept: "application/json",
@@ -49,7 +69,7 @@ function removerComanda(comandaId) {
   })
     .then((response) => {
       if (response.ok) {
-        // Se a remoção for bem-sucedida, remove a comanda da interface
+      
         const comandaElement = document.getElementById(comandaId);
         if (comandaElement) {
           comandaElement.remove();
@@ -71,7 +91,7 @@ function FinalizarComanda(comandaId) {
   })
     .then((response) => {
       if (response.ok) {
-        // Se a remoção for bem-sucedida, remove a comanda da interface
+       
         const comandaElement = document.getElementById(comandaId);
         if (comandaElement) {
           comandaElement.remove();
@@ -86,7 +106,7 @@ function FinalizarComanda(comandaId) {
 }
 socket.on("NovaComanda", (comanda) => {
   // Criar uma string com todos os itens do pedido
-  const pedidos = comanda.pedido
+  const pedidos = comanda.pedidos
     .map((pedido) => pedido.quantidade + " " + pedido.nomePedido)
     .join(", " + "<br>");
 
@@ -119,37 +139,52 @@ socket.on("ComandaDeletada", (id) => {
     comandaElement.remove();
   }
 });
-//funsao de atualizar comanda
+
 var pedidoSalvo;
 function AtualizarComanda(id) {
   const elementComanda = document.getElementById(id);
-  fetch(`/comanda/${id}`)
+  fetch(`/comanda/${id}`, {
+    
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
     .then((response) => response.json())
     .then((response) => {
-      // Renderiza cada pedido em um card separado
+    
       pedidoSalvo = response.pedido;
       const pedidos = response.pedido
         .map(
           (pedido) => `
           <div id="${pedido._id}" class="pedido-anterior">
-            <p><b>Pedido:</b> ${pedido.nomePedido}</p>
-            <p><b>Observação:</b> ${pedido.obs || "Nenhuma"}</p>
-            <p><b>Quantidade:</b> ${pedido.quantidade}</p>
+            <p class="nome-pedido-alterar"><b>Pedido:</b> ${
+              pedido.nomePedido
+            }</p>
+            <p class="obs-pedido-alterar"><b>Observação:</b> ${
+              pedido.obs || "Nenhuma"
+            }</p>
+            <p class="quantidade-alterar"><b>Quantidade:</b> ${
+              pedido.quantidade
+            }</p>
             <button class="botaoremover" onclick="RemoverPedido('${
               pedido._id
             }')">Remover</button>
           </div>
           `
         )
-        .join(""); // Junta todos os cards de pedidos em uma única string
+        .join(""); 
 
-      // Atualiza o conteúdo da comanda com os pedidos renderizados
+      
+
       elementComanda.innerHTML = `
-        <div id="${response._id}" class="comandas">
+       
+       
           <h2><b>Mesa: ${response.mesa}</b></h2>  <input type="text" id="numeroMesaAtualizar" placeholder="Digite o novo número da mesa (opcional)"><br>
-          <!-- Renderiza os pedidos anteriores -->
-          <h3>Pedidos Anteriores:</h3>
+           <!-- Renderiza os pedidos anteriores -->
+        <h3>Pedidos Anteriores:</h3>
           ${pedidos}
+         <br>
           <!-- Campos para atualizar a comanda -->
           <!--<input type="text" id="numeroMesaAtualizar" placeholder="Digite o novo número da mesa (opcional)">-->
           <div id="pedido${response._id}">
@@ -159,15 +194,15 @@ function AtualizarComanda(id) {
           </div>
           <button id="botaoAdicionarInput" onclick="AdicionarInput('${id}')">Adicionar mais um pedido</button>
           <button onclick="enviarAtualizacao('${id}')">Atualizar</button>
-        </div>
+       
       `;
     })
     .catch((error) => {
       console.error("Erro ao buscar comanda:", error);
     });
 }
-//
-//funsao de remover pedido
+
+
 function RemoverPedido(id) {
   const pedidoItem = document.getElementById(id);
   pedidoItem.remove();
@@ -176,17 +211,17 @@ function RemoverPedido(id) {
       pedidoSalvo.splice(pedidoSalvo.indexOf(pedido), 1);
     }
   });
-  // alert(JSON.stringify(pedidoSalvo));
+  
 }
-//
-//funsao de enviar atualizasao de comanda
+
+
 function enviarAtualizacao(id) {
-  // Captura o valor do input da mesa (se preenchido)
+  
   const numeroMesa = document
     .getElementById("numeroMesaAtualizar")
     .value.trim();
 
-  // Array para armazenar os pedidos
+ 
   const pedidos = pedidoSalvo;
 
   // Captura todos os inputs de pedido, observação e quantidade
@@ -198,49 +233,47 @@ function enviarAtualizacao(id) {
     `#pedido${id} .quantidade`
   );
 
-  // Itera sobre os inputs de pedido
+  
   inputsPedido.forEach((input, index) => {
-    const pedido = input.value.trim(); // Remove espaços em branco
-    const obs = inputsObs[index].value.trim(); // Remove espaços em branco
-    const quantidade = inputsQuantidade[index].value.trim(); // Remove espaços em branco
+    const pedido = input.value.trim();
+    const obs = inputsObs[index].value.trim(); 
+    const quantidade = inputsQuantidade[index].value.trim(); 
 
-    // Adiciona o pedido ao array apenas se o nome do pedido for preenchido
+    
     if (pedido) {
       pedidos.push({
         nomePedido: pedido,
-        obs: obs || null, // Se a observação estiver vazia, define como null
-        quantidade: quantidade || 1, // Se a quantidade estiver vazia, define como 1 (ou outro valor padrão)
+        obs: obs || null, 
+        quantidade: quantidade || 1, 
       });
     }
   });
 
-  // Objeto de atualização
+ 
   const dadosAtualizados = {};
 
-  // Adiciona a mesa ao objeto de atualização apenas se foi preenchida
+ 
   if (numeroMesa) {
     dadosAtualizados.mesa = numeroMesa;
   }
 
-  // Adiciona os pedidos ao objeto de atualização apenas se houver pedidos
+  
   if (pedidos.length > 0) {
     dadosAtualizados.pedido = pedidos;
   }
 
-  // Envia a requisição para o servidor
+  
   fetch(`/AtualizarComanda/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Adicionar token para autorização
     },
     body: JSON.stringify(dadosAtualizados),
   })
     .then((response) => {
       if (response.ok) {
-        // alert("Comanda atualizada com sucesso!");
-        // Recarrega as comandas após a atualização
-        // comandasRenderizar.innerHTML = "";
-        // pegarComandas();
+      
       } else {
         console.error("Erro ao atualizar comanda");
       }
@@ -249,12 +282,11 @@ function enviarAtualizacao(id) {
       console.error("Erro ao atualizar comanda:", error);
     });
 }
-//
-//
+
 function AdicionarInput(id) {
   const elementComanda = document.getElementById("pedido" + id);
 
-  // Cria novos inputs para pedido, observação e quantidade
+  
   const novoPedido = document.createElement("input");
   novoPedido.type = "text";
   novoPedido.className = "pedidoComandaAtualizar";
@@ -270,7 +302,7 @@ function AdicionarInput(id) {
   novaQuantidade.className = "quantidade";
   novaQuantidade.placeholder = "Digite a quantidade";
 
-  // Adiciona os novos inputs à div de pedidos
+ 
   elementComanda.appendChild(novoPedido);
   elementComanda.appendChild(novaObs);
   elementComanda.appendChild(novaQuantidade);
@@ -278,7 +310,7 @@ function AdicionarInput(id) {
 function AdicionarInput2(id) {
   const elementComanda = document.getElementById(id);
 
-  // Cria novos inputs para pedido, observação e quantidade
+ 
   const novoPedido = document.createElement("input");
   novoPedido.type = "text";
   novoPedido.className = "pedidoComandaCriar";
@@ -294,7 +326,7 @@ function AdicionarInput2(id) {
   novaQuantidade.className = "quantidade";
   novaQuantidade.placeholder = "Digite a quantidade";
 
-  // Adiciona os novos inputs à div de pedidos
+  
   elementComanda.appendChild(novoPedido);
   elementComanda.appendChild(novaObs);
   elementComanda.appendChild(novaQuantidade);
@@ -330,7 +362,6 @@ function criarComanda() {
     if (pedido) {
       pedidos.push({
         nomePedido: pedido,
-        obs: obs,
         quantidade: quantidade,
       });
     }
@@ -340,7 +371,7 @@ function criarComanda() {
     mesa: numeroMesa,
     pedido: pedidos,
   };
-  fetch(`/CriarComanda`, {
+  fetch(`/CriarComanda/${token}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -350,12 +381,16 @@ function criarComanda() {
     .then((response) => {
       if (response.ok) {
         alert("Comanda criada com sucesso!");
-        document.getElementById("criarcomanda1").remove();
-        comandasRenderizar.removeChild();
-
-        pegarComandas(); // Recarrega as comandas após a atualização
+        const formCriar = document.getElementById("criarcomanda1");
+        if (formCriar) {
+          formCriar.remove();
+        }
+        
       } else {
-        console.error("Erro ao criar comanda");
+        return response.json().then((err) => {
+          alert(`Erro ao criar comanda: ${err.message}`);
+          console.error("Erro ao criar comanda:", err.message);
+        });
       }
     })
     .catch((error) => {
@@ -363,7 +398,7 @@ function criarComanda() {
     });
 }
 socket.on("ComandaAtualizada", (comanda) => {
-  // Remove a comanda antiga da interface
+  
   const comandaAntiga = document.getElementById(comanda.id);
   if (comandaAntiga) {
     comandaAntiga.remove();
@@ -372,3 +407,16 @@ socket.on("ComandaAtualizada", (comanda) => {
   pegarComandas();
   alert("comanda da mesa " + comanda.mesa + " atualizada");
 });
+const titulo = document.getElementById("titulo");
+fetch(`/titulo`, {
+  
+  method: "GET",
+  headers: {
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+})
+  .then((response) => response.json())
+  .then((response) => {
+    titulo.innerText = response;
+  });
