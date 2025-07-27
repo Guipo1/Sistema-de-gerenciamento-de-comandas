@@ -13,11 +13,10 @@ import modeloLogar from "./src/models/userLogado.js";
 import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
 import jwt from "jsonwebtoken";
 
-// Em um ambiente de produção, a chave secreta NUNCA deve ser hardcoded.
-// Use variáveis de ambiente. Ex: process.env.JWT_SECRET
-const Secret = "seu-segredo-super-secreto-e-longo";
 
-//import { Socket } from "dgram";
+const Secret = "jejf348j8qfj43fjrejf9g34fdjq93pjf9p349fjaqrifk034kfe";
+
+
 import produto from "./src/models/precomodel1.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,7 +56,7 @@ const server = https.createServer(
 const io = new Server(server);
 server.listen(8080, () => console.log("rodando na porta 8080"));
 
-// Lógica de Salas do Socket.IO
+
 io.on("connection", (socket) => {
   console.log("Um usuário se conectou:", socket.id);
 
@@ -75,33 +74,27 @@ try {
   console.log(err);
 }
 var valorArecadado = 0;
-//
-//acesar pagina principal depois de logado
+
 app.get("/index/:token", verificarToken, async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/pagina/rotas1.html"));
 });
-//
-//acesar imagem do icone de lapis
+
 app.get("/admin/iconelapis1.png", async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/imagens/iconelapis1.png"));
 });
-//
-//acesar imagem do icone de lapis
+
 app.get("/fundopousada.jpg", async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/imagens/fundopousada.jpg"));
 });
-//
-//acesar imagem do icone de lapis
+
 app.get("/adicionar.png", async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/imagens/adicionar.png"));
 });
-//
-//acesar icone de cancelar
+
 app.get("/iconecancelar.png", async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/imagens/iconecancelar.png"));
 });
-//
-//cria funsao de verificar token
+
 function verificarToken(req, res, next) {
   const token = req.params.token;
   if (!token) {
@@ -115,7 +108,7 @@ function verificarToken(req, res, next) {
       console.log(err);
       return res.status(403).json({ message: "Token inválido ou expirado." });
     }
-    // Opcional, mas recomendado: Verificar se o usuário/token ainda existe no banco
+   
     const usuario = await modeloLogar.findOne({
       token: token,
     });
@@ -126,34 +119,28 @@ function verificarToken(req, res, next) {
     next();
   });
 }
-//
-//acesar pagina principal (agora protegida)
+
 app.get("/admin/:token", verificarToken, async (req, res) => {
   // Removido o token da URL
   res.sendFile(path.join(__dirname, "./src/pagina/index.html"));
 });
-//
-//acesar o css da pagina
+
 app.get("/style.css", async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/pagina/style.css"));
 });
-//
-//acesar o javascript da pagina
+
 app.get("/script.js", async (req, res) => {
   res.sendFile(path.join(__dirname, "./src/pagina/script.js"));
 });
-//
-//acesar a pagina para fazer pedidos
+
 app.get("/cardapio/:nomeEstabelecimento", (req, res) => {
   res.sendFile(path.join(__dirname, "./src/pagina/pedidos.html"));
 });
-//
-//acesar a pagina para fazer pedidos
+
 app.get("/iconecarinho.png", (req, res) => {
   res.sendFile(path.join(__dirname, "./src/imagens/iconecarinho.png"));
 });
-//
-//acesar pagina ´para alterar produtos
+
 app.get(
   "/alterar/:token/:nomeEstabelecimento",
   verificarToken,
@@ -161,8 +148,7 @@ app.get(
     res.sendFile(path.join(__dirname, "./src/pagina/pedidos1.html"));
   }
 );
-//
-//visializar todas as comandas
+
 app.get("/VisualizarComandas/:token", verificarToken, async (req, res) => {
   try {
     // O middleware `verificarToken` já nos deu `req.user`
@@ -183,8 +169,7 @@ app.get("/VisualizarComandas/:token", verificarToken, async (req, res) => {
     });
   }
 });
-//
-//criar comanda
+
 app.post("/CriarComanda/:token", verificarToken, async (req, res) => {
   try {
     const hoje = new Date();
@@ -222,12 +207,10 @@ app.post("/CriarComanda/:token", verificarToken, async (req, res) => {
         valor: valorTotal,
       };
 
-      // Encontra o índice do registro de hoje no array 'valorArecadado'
+     
       let indexDia = -1;
       for (let i = 0; i < estabelecimento.valorArecadado.length; i++) {
-        // É crucial que 'estabelecimento.valorArecadado[i].dia' seja uma string que 'new Date()'
-        // consiga parsear e que 'toDateString()' produza o mesmo formato de 'hojeString'.
-        // Se você puder salvar 'dia' como um tipo Date nativo no MongoDB, a comparação seria mais simples.
+       
         if (
           new Date(estabelecimento.valorArecadado[i].dia).toDateString() ===
           hojeString
@@ -242,28 +225,28 @@ app.post("/CriarComanda/:token", verificarToken, async (req, res) => {
       };
 
       if (indexDia !== -1) {
-        // Se o registro para hoje existe, incrementa os valores
+       
         updateOperation.$inc = {};
         updateOperation.$inc[`valorArecadado.${indexDia}.valor`] = valorTotal;
         updateOperation.$inc[`valorArecadado.${indexDia}.numeroComandas`] = 1;
         console.log("Registro existente atualizado para hoje.");
       } else {
-        // Se o registro para hoje não existe, adiciona um novo
+       
         const novoRegistroDia = {
           valor: valorTotal,
           numeroComandas: 1,
-          dia: hojeString, // Salva a data como string para consistência com seus dados existentes
-          _id: new mongoose.Types.ObjectId(), // ID único para o subdocumento
+          dia: hojeString, 
+          _id: new mongoose.Types.ObjectId(), 
         };
-        updateOperation.$push.valorArecadado = novoRegistroDia; // Adiciona o novo registro de dia
+        updateOperation.$push.valorArecadado = novoRegistroDia; 
         console.log("Novo registro criado para hoje.");
       }
 
-      // Executa a operação de atualização no banco de dados
+   
       const documentoAtualizado = await modeloLogar.findOneAndUpdate(
-        { token: req.params.token }, // Encontra o documento pelo token
-        updateOperation, // Aplica as operações de push e/ou inc
-        { new: true } // Retorna o documento atualizado
+        { token: req.params.token }, 
+        updateOperation, 
+        { new: true } 
       );
 
       if (!documentoAtualizado) {
@@ -284,47 +267,45 @@ app.post("/CriarComanda/:token", verificarToken, async (req, res) => {
       res.status(300).json({ message: "produto nao encontrado" });
     }
   } catch (err) {
-    console.error("Erro ao criar comanda:", err); // Use console.error para erros
+    console.error("Erro ao criar comanda:", err); 
     res
       .status(500)
       .json({ message: "Erro ao criar comanda.", error: err.message });
   }
 });
-//
-//procurarComandaporId
+
+
 app.get("/comanda/:id", async (req, res) => {
   const id = req.params.id;
   const comanda = await procurarComandaporId(id);
   res.status(200).json(JSON.parse(comanda));
 });
-//
-//funsao para procurar comanda pelo seu id
+
 async function procurarComandaporId(id) {
   const comandaPeloId = await modeloLogar.findById(id);
   return JSON.stringify(comandaPeloId);
 }
-//
-//atualizar uma comanda
+
 app.put("/AtualizarComanda/:id/:token", verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { mesa, pedido } = req.body;
 
-    // Objeto para armazenar as alterações
+   
     const alteracoes = {};
 
-    // Verifica se a mesa foi enviada e adiciona ao objeto de alterações
+  
     if (mesa !== undefined) {
       alteracoes.mesa = mesa;
     }
 
-    // Verifica se o pedido foi enviado e recalcula o valor
+    /
     if (pedido !== undefined) {
       alteracoes.pedido = pedido;
       alteracoes.valor = await CalcularPreco(pedido);
     }
 
-    // Atualiza a comanda no banco de dados com as alterações
+    
     const comandaAtualizada = await modeloLogar.findByIdAndUpdate(
       id,
       alteracoes,
@@ -344,14 +325,13 @@ app.put("/AtualizarComanda/:id/:token", verificarToken, async (req, res) => {
       .json({ message: "ocorreu um erro interno ao atualizar a comanda", err });
   }
 });
-//
-//deletar uma comanda
+
 app.delete("/RemoverComanda/:id/:token", verificarToken, async (req, res) => {
   try {
     const hoje = new Date(); // Obtenha a data atual
     hoje.setHours(0, 0, 0, 0); // Zere as horas para pegar o início do dia
 
-    // Formate a data de hoje para 'YYYY-MM-DD'
+   
     const hojeFormatado = hoje.toISOString().split("T")[0];
 
     const idComanda = req.params.id;
@@ -376,8 +356,7 @@ app.delete("/RemoverComanda/:id/:token", verificarToken, async (req, res) => {
 
     let indexDia = -1;
     for (let i = 0; i < usuario.valorArecadado.length; i++) {
-      // Obtenha a data do array e formate para 'YYYY-MM-DD'
-      // É importante que o campo 'dia' no banco de dados seja sempre uma string que 'new Date()' consiga parsear
+    
       const diaArray = new Date(usuario.valorArecadado[i].dia)
         .toISOString()
         .split("T")[0];
@@ -399,8 +378,7 @@ app.delete("/RemoverComanda/:id/:token", verificarToken, async (req, res) => {
         "Dia de hoje:",
         hojeFormatado
       );
-      // Considere se você quer adicionar um novo registro ou simplesmente não decrementar
-      // caso o dia não seja encontrado. Para este cenário, ele simplesmente não fará o $inc.
+    
     }
 
     const comandaRemovida = await modeloLogar.findOneAndUpdate(
@@ -449,8 +427,7 @@ app.delete("/FinalizarComanda/:id/:token", async (req, res) => {
       .json({ message: "ocoreu um erro interno ao deletar a comanda" });
   }
 });
-//
-//ver o total arecadado
+
 app.get("/ValorArecadado", (req, res) => {
   res.json({ valorArecadado });
 });
@@ -481,8 +458,7 @@ async function calcularValorTotal(pedidos, nomeEstabelecimento) {
         console.warn(
           `Produto "${item.nomePedido}" não encontrado no cardápio do estabelecimento.`
         );
-        // Decide como lidar com produtos não encontrados. Pode ser um erro ou um valor padrão.
-        // Para este exemplo, vamos considerar o valor como 0.
+       
       }
     }
 
@@ -505,7 +481,7 @@ app.get("/buscar-produtos/:nomeEstabelecimento", async (req, res) => {
     const produto = await modeloLogar.find({
       nomeEstabelecimento: req.params.nomeEstabelecimento,
     });
-    //res.sendFile(path.join(__dirname, "/src/pagina/pedidos.html"));
+    
 
     console.log(produto);
     res.send(produto[0].produtos);
@@ -525,16 +501,16 @@ app.post("/produto/:nomeEstabelecimento", async (req, res) => {
         .json({ message: "Nome, valor e tipo do produto são obrigatórios." });
     }
 
-    // 1. Criamos o objeto do produto, gerando o _id manualmente
+ 
     const produtoNovo = {
-      _id: new mongoose.Types.ObjectId(), // Corrigido de 'id' para '_id'
+      _id: new mongoose.Types.ObjectId(), 
       nomeProduto: nomeProduto,
       ingredientes: ingredientes || [],
       valor: valor,
       tipoProduto: tipoProduto,
     };
 
-    // 2. Usamos $push para adicionar o objeto completo ao array
+    
     const resultado = await modeloLogar.updateOne(
       { nomeEstabelecimento: nomeEstabelecimento },
       { $push: { produtos: produtoNovo } }
@@ -552,7 +528,7 @@ app.post("/produto/:nomeEstabelecimento", async (req, res) => {
         .json({ message: "Falha ao adicionar o produto ao estabelecimento." });
     }
 
-    // 3. Retornamos o objeto do produto recém-criado na resposta
+    
     res.status(201).json({
       message: "Produto adicionado com sucesso.",
       produto: produtoNovo,
@@ -569,7 +545,7 @@ app.put("/produto/:nomeEstabelecimento/:id", async (req, res) => {
     const { id, nomeEstabelecimento } = req.params;
     const { nomeProduto, ingredientes, valor, tipoProduto } = req.body;
 
-    // Constrói o objeto de atualização dinamicamente com os campos fornecidos.
+    
     const camposParaAtualizar = {};
     if (nomeProduto !== undefined) {
       camposParaAtualizar["produtos.$.nomeProduto"] = nomeProduto;
@@ -584,7 +560,7 @@ app.put("/produto/:nomeEstabelecimento/:id", async (req, res) => {
       camposParaAtualizar["produtos.$.tipoProduto"] = tipoProduto;
     }
 
-    // Verifica se há algo para atualizar.
+   
     if (Object.keys(camposParaAtualizar).length === 0) {
       return res
         .status(400)
@@ -613,7 +589,7 @@ app.put("/produto/:nomeEstabelecimento/:id", async (req, res) => {
         .json({ message: "Produto encontrado, mas nenhum dado foi alterado." });
     }
 
-    //res.json({ message: "Produto atualizado com sucesso." });
+    
     res.json(resultado);
   } catch (err) {
     console.error("Erro ao atualizar produto:", err);
@@ -626,8 +602,7 @@ app.delete("/produto/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Encontra qualquer estabelecimento que contenha o produto com o ID fornecido
-    // e remove esse produto do array 'produtos'.
+    
     const resultado = await modeloLogar.updateOne(
       { "produtos._id": id },
       { $pull: { produtos: { _id: id } } }
@@ -639,8 +614,7 @@ app.delete("/produto/:id", async (req, res) => {
         .json({ message: "Produto não encontrado em nenhum estabelecimento." });
     }
 
-    // Este caso é menos provável de acontecer com $pull se o match foi encontrado,
-    // mas é bom manter por segurança.
+    
     if (resultado.modifiedCount === 0) {
       return res
         .status(404)
@@ -665,7 +639,7 @@ app.post("/cadastro", async (req, res) => {
     const token = await jwt.sign(
       { usuario: usuario, nomeEstabelecimento: nomeEstabelecimento },
       Secret,
-      { expiresIn: "6h" } // Token expira em 1 hora
+      { expiresIn: "6h" } 
     );
     const senhaHasheada = hashPassword(senha);
     const novoUsuario = await modeloLogar.create({
@@ -704,7 +678,7 @@ app.get("/estabelecimentos", async (req, res) => {
   const estabelecimento = await modeloLogar.find();
   res.json(estabelecimento);
 });
-// Rota de Login
+
 app.post("/", async (req, res) => {
   try {
     const senha = req.body.senha;
