@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-
-// Definimos o schema do produto aqui para ser embutido diretamente.
 const produtoSubSchema = new mongoose.Schema({
   _id: { type: mongoose.Schema.Types.ObjectId, required: true },
   nomeProduto: { type: String, required: true },
@@ -34,7 +32,8 @@ const logadoSchema = new mongoose.Schema(
     imagemLogo: { type: String },
     token: { type: String },
     ip: { type: String },
-    produtos: [produtoSubSchema], // Usamos o schema do subdocumento aqui
+    email: { type: String, required: true },
+    produtos: [produtoSubSchema],
     comandas: [comandaSubSchema],
     valorArecadado: [valrArecadadoSchema],
   },
