@@ -1,111 +1,325 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0" />-->
-    <div id="logo">
-      <img src="https://www.pousadafelix.com.br/images/logo.png" />
-    </div>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seus produtos</title>
+    <div id="imagem"></div>
+    <style>
+      #imagem {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-width: 1%;
+        height: auto;
+        margin: 10%;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #dddddd;
+        color: #cecbba;
+      }
+      h1 {
+        color: #0056b3;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .categoria-section {
+        margin-bottom: 40px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+      }
+      .categoria-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+      .categoria-title {
+        color: #28a745;
+        font-size: 1.8em;
+        margin-bottom: 20px;
+        border-left: 5px solid #28a745;
+        padding-left: 10px;
+      }
+      .produto-card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .produto-card h3 {
+        margin: 0 0 5px 0;
+        color: #007bff;
+        font-size: 1.2em;
+      }
+      .produto-card p {
+        margin: 0;
+        font-size: 0.95em;
+        line-height: 1.4;
+      }
+      .loading-message {
+        text-align: center;
+        font-size: 1.1em;
+        color: #666;
+      }
+      .error-message {
+        text-align: center;
+        font-size: 1.1em;
+        color: #dc3545;
+      }
+      .botao-alterar {
+        background-color: green;
+        color: white;
+      }
+      .botao-deletar {
+        background-color: red;
+        color: white;
+      }
+      .nomeProdutos,
+      .ingredientes,
+      .valor {
+        color: black;
+      }
+      #criarProduto {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #botao {
+        display: flex;
+        flex-direction: column;
+        border: 2px solid black;
+        justify-content: center;
+        align-items: center;
+        right: 50%;
+        position: absolute;
+        width: 10%;
+        height: auto;
+      }
+    </style>
   </head>
   <body>
-    <section id="caixaCardapio">
-      <article id="botoescaixa">
-        <a href="#lanches"><button class="botoes">Lanches</button></a>
-        <a href="#alacarte"><button class="botoes">Alacarte</button></a>
-        <a href="#pizzas"><button class="botoes">Pizzas</button></a>
-        <a href="#bebidas"><button class="botoes">Bebidas</button></a>
-      </article>
-      <div id="lanches" class="render-cards">
-        <u><h1>Lanches</h1></u>
-        <button
-          onclick="adicionarProduto('lanches')"
-          class="botao-adicionar-produto"
-        >
-          Adicionar
-        </button>
+    <div class="container" id="container">
+      <h1>Seus Produtos</h1>
+      <div id="produtos-container">
+        <p class="loading-message">Carregando produtos...</p>
       </div>
-      <div id="alacarte" class="render-cards">
-        <u><h1>Alacarte</h1></u>
-        <button
-          onclick="adicionarProduto('alacarte')"
-          class="botao-adicionar-produto"
-        >
-          Adicionar
-        </button>
-      </div>
-      <div id="pizzas" class="render-cards">
-        <u><h1>Pizzas</h1></u>
-        <button
-          onclick="adicionarProduto('pizzas')"
-          class="botao-adicionar-produto"
-        >
-          Adicionar
-        </button>
-      </div>
-      <div id="bebidas" class="render-cards">
-        <u><h1>Bebidas</h1></u>
-        <button
-          onclick="adicionarProduto('bebidas')"
-          class="botao-adicionar-produto"
-        >
-          Adicionar
-        </button>
-      </div>
-    </section>
-
+    </div>
+    <div id="botao">
+      <button id="criarProduto" onclick="criarProduto()">
+        Criar um novo produto
+      </button>
+    </div>
     <script>
       const url = window.location.href;
       const partesDaUrl = url.split("/");
       const ultimoElemento = partesDaUrl.pop();
-      fetch(`/buscar-produtos/${ultimoElemento}`)
-        .then((menu) => menu.json())
-        .then((menu) => {
-          menu.forEach((produto) => {
-            if (produto.tipoProduto == "lanches") {
-              document.getElementById("lanches").innerHTML += renderizarProduto(
-                produto._id,
-                produto.nomeProduto,
-                produto.ingredientes,
-                produto.valor
-              );
+      const token = localStorage.getItem("token");
+      const API_URL = `/buscar-produtos/${ultimoElemento}`; // URL da sua API que retorna todos os produtos
+
+      const produtosContainer = document.getElementById("produtos-container");
+
+      /**
+       * Busca todos os produtos da API e os agrupa por categoria.
+       * @returns {Object} Um objeto onde as chaves são os nomes das categorias e os valores são arrays de produtos.
+       */
+      async function getAndGroupProductsByCategory() {
+        try {
+          const response = await fetch(API_URL);
+
+          if (!response.ok) {
+            throw new Error(`Erro HTTP! Status: ${response.status}`);
+          }
+
+          const produtos = await response.json(); // Recebe o array plano de produtos
+          alert(JSON.stringify(produtos));
+          document.getElementById(
+            "imagem"
+          ).innerHTML += `<img src="/imagem/${produtos.nomeImagem}" id="imagem">`;
+          if (produtos.produtos.length === 0) {
+            return {}; // Retorna um objeto vazio se não houver produtos
+          }
+
+          const produtosPorCategoria = {};
+
+          // Agrupa os produtos por tipoProduto
+          produtos.produtos.forEach((produto) => {
+            const categoria = produto.tipoProduto.toLowerCase(); // Garante consistência
+            if (!produtosPorCategoria[categoria]) {
+              produtosPorCategoria[categoria] = [];
             }
-            if (produto.tipoProduto == "alacarte") {
-              document.getElementById("alacarte").innerHTML +=
-                renderizarProduto(
-                  produto._id,
-                  produto.nomeProduto,
-                  produto.ingredientes,
-                  produto.valor
-                );
-            }
-            if (produto.tipoProduto == "pizzas") {
-              document.getElementById("pizzas").innerHTML += renderizarProduto(
-                produto._id,
-                produto.nomeProduto,
-                produto.ingredientes,
-                produto.valor
-              );
-            }
-            if (produto.tipoProduto == "bebidas") {
-              document.getElementById("bebidas").innerHTML += renderizarProduto(
-                produto._id,
-                produto.nomeProduto,
-                produto.ingredientes,
-                produto.valor
-              );
+            produtosPorCategoria[categoria].push(produto);
+          });
+
+          return produtosPorCategoria;
+        } catch (error) {
+          console.error("Erro ao buscar e agrupar produtos:", error);
+          throw error; // Rejoga o erro para ser tratado pela função chamadora
+        }
+      }
+
+      /**
+       * Renderiza os produtos agrupados na interface do usuário.
+       * @param {Object} produtosAgrupados - Objeto com produtos agrupados por categoria.
+       */
+      function renderProducts(produtosAgrupados) {
+        produtosContainer.innerHTML = ""; // Limpa qualquer conteúdo anterior
+
+        const categoriasOrdenadas = Object.keys(produtosAgrupados).sort(); // Ordena as categorias alfabeticamente
+
+        if (categoriasOrdenadas.length === 0) {
+          produtosContainer.innerHTML =
+            '<p class="loading-message">Nenhum produto encontrado.</p>';
+          return;
+        }
+
+        categoriasOrdenadas.forEach((categoriaNome) => {
+          const produtosDaCategoria = produtosAgrupados[categoriaNome];
+
+          const categoriaSection = document.createElement("div");
+          categoriaSection.classList.add("categoria-section");
+          categoriaSection.id = `${categoriaNome}`;
+          const categoriaTitle = document.createElement("h2");
+          categoriaTitle.classList.add("categoria-title");
+          categoriaTitle.textContent =
+            categoriaNome.charAt(0).toUpperCase() + categoriaNome.slice(1);
+          categoriaSection.appendChild(categoriaTitle);
+
+          produtosDaCategoria.forEach((produto) => {
+            const produtoCard = document.createElement("div");
+            produtoCard.classList.add("produto-card");
+            produtoCard.innerHTML = `
+                         <div class="cardProdutos" id="${produto._id}">
+
+          <h2 class="nomeProdutos">${produto.nomeProduto}</h2>
+          <div class="ingredientes">${produto.ingredientes}</p>
+          <div class="valor">R$ ${produto.valor}</div>
+             <button onclick="alterar('${produto._id}')" class="botao-alterar">alterar</button>
+          <button class="botao-deletar" onclick="deletar('${produto._id}')">Deletar</button>
+        </div>
+                    `;
+            categoriaSection.appendChild(produtoCard);
+          });
+
+          produtosContainer.appendChild(categoriaSection);
+        });
+      }
+
+      // --- Ponto de Entrada da Aplicação ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const produtosAgrupados = await getAndGroupProductsByCategory();
+          renderProducts(produtosAgrupados);
+        } catch (error) {
+          produtosContainer.innerHTML = `<p class="error-message">Não foi possível carregar os produtos. Por favor, tente novamente mais tarde. (${error.message})</p>`;
+        }
+      });
+      function criarProduto() {
+        document.getElementById("container").innerHTML += `
+      <div id="criar-produto">
+      <h1>Digie o novo produto</h1>
+      <input type="text" id="nome" placeholder="nome do produto">
+      <input type="text" id="categoria" placeholder="categoria do produto">
+      <input type="text" id="ingredientes" placeholder="ingredientes do produto">
+      <input type="number" id="valor" placeholder="valor do produto">
+      <button id="apagar" onclick="apagar()">Apagar</button>
+      <button id="enviar" onclick="enviar()">Enviar</button>
+      </div>
+      `;
+      }
+      function apagar() {
+        document.getElementById("criar-produto").remove();
+      }
+      function enviar() {
+        const nomeProduto = document.getElementById("nome").value.trim();
+        const categoiaProduto = document
+          .getElementById("categoria")
+          .value.trim();
+        const ingredientesProduto = document
+          .getElementById("ingredientes")
+          .value.trim();
+        const valorProduto = document.getElementById("valor").value.trim();
+        const produto = {
+          nomeProduto: nomeProduto,
+          ingredientes: ingredientesProduto,
+          valor: valorProduto,
+          tipoProduto: categoiaProduto,
+          nomeEstabelecimento: ultimoElemento,
+        };
+
+        fetch(`/produto/${ultimoElemento}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(produto),
+        })
+          .then((data) => data.json())
+          .then((produto) => {
+            console.log(produto.produto.tipoProduto);
+            const adicionarProduto = document.getElementById(
+              produto.produto.tipoProduto
+            );
+            if (adicionarProduto) {
+              adicionarProduto.innerHTML += ` <div class="cardProdutos" id="${produto._id}">
+
+          <h2 class="nomeProdutos">${produto.nomeProduto}</h2>
+          <div class="ingredientes">${produto.ingredientes}</p>
+          <div class="valor">R$ ${produto.valor}</div>
+             <button onclick="alterar('${produto._id}')" class="botao-alterar">alterar</button>
+          <button class="botao-deletar" onclick="deletar('${produto._id}')">Deletar</button>
+        </div>`;
+              const criarProduto = document.getElementById("criar-produto");
+              criarProduto.remove();
+            } else {
+              const container = document.getElementById("container");
+              container.innerHTML += `
+        <div class="categoria-section">
+          <h2 class="categoria-title">${produto.produto.tipoProduto}</h2>
+          <div class="cardProdutos" id="${produto.produto._id}">
+
+          <h2 class="nomeProdutos">${produto.produto.nomeProduto}</h2>
+          <div class="ingredientes">${produto.produto.ingredientes}</p>
+          <div class="valor">R$ ${produto.produto.valor}</div>
+             <button onclick="alterar('${produto.produto._id}')" class="botao-alterar">alterar</button>
+          <button class="botao-deletar" onclick="deletar('${produto.produto._id}')">Deletar</button>
+        </div>
+        </div>`;
+              const criarProduto = document.getElementById("criar-produto");
+              criarProduto.remove();
             }
           });
-        });
-      function renderizarProduto(id, nome, ingredientes, valor) {
-        return `
-        <div class="cardProdutos" id="${id}">
-          <button onclick="alterar('${id}')" class="alterar">alterar</button>
-          <button class="botao-deletar" onclick="deletar('${id}')">Deletar</button>
-          <h2 class="nomeProdutos">${nome}</h2>
-          <div class="ingredientes">${ingredientes}</p>
-          <div class="valor">R$ ${valor}</div>
-        </div>
-        `;
+      }
+      function deletar(id) {
+        const deletar = prompt(
+          `Tem certeza que deseja excluir esse produto, responda com "sim" ou "não"`
+        );
+        if (deletar.includes("sim")) {
+          fetch(`/produto/${id}`, {
+            method: "DELETE",
+          }).then((response) => {
+            if (response.ok) {
+              const elemento = document.getElementById(id);
+              elemento.remove();
+              alert("produto deletado com sucesso");
+            }
+          });
+        } else {
+          alert("não foi possivel excluir o produto");
+        }
       }
       function alterar(id) {
         const produtoASerAlterado = document.getElementById(id);
@@ -151,7 +365,7 @@
             alert("produto alterado com sucesso");
             const elemento = document.getElementById(id);
             document.getElementById("alterasao").remove();
-            elemento.innerHTML = ` 
+            elemento.innerHTML = `
           <button onclick="alterar('${response._id}')" class="alterar">alterar</button>
           <button class="botao-deletar" onclick="deletar('${response._id}')">Deletar</button>
           <h2 class="nomeProdutos">${response.nomeProduto}</h2>
@@ -160,304 +374,6 @@
         `;
           });
       }
-      function cancelarAlterasao(id) {
-        const elemento1 = document.getElementById("alterasao");
-        elemento1.remove();
-        const elemento = document.getElementById(id);
-        fetch(`/produto/${id}`, { method: "GET" })
-          .then((response) => response.json())
-          .then((response) => {
-            elemento.innerHTML = `<button onclick="alterar('${response._id}')" class="alterar">alterar</button>
-          <h2 class="nomeProdutos">${response.nomeProduto}</h2>
-          <div class="ingredientes">${response.ingredientes}</p>
-          <div class="valor">R$ ${response.valor}</div>`;
-          });
-      }
-      function deletar(id) {
-        const deletar = prompt(
-          `Tem certeza que deseja excluir esse produto, responda com "sim" ou "não"`
-        );
-        if (deletar.includes("sim")) {
-          fetch(`/produto/${id}`, {
-            method: "DELETE",
-          }).then((response) => {
-            if (response.ok) {
-              const elemento = document.getElementById(id);
-              elemento.remove();
-              alert("produto deletado com sucesso");
-            }
-          });
-        } else {
-          alert("não foi possivel excluir o produto");
-        }
-      }
-      function cancelarcriasao() {
-        const elemento = document.getElementById("novoproduto");
-        elemento.remove();
-      }
-      function adicionarProduto(id) {
-        const elemento = document.getElementById(id);
-        elemento.innerHTML += `
-        <div id="novoproduto">
-        Nome do produto: <input type="text" id="nomeDoProduto"><br>
-        Ingredientes: <textarea name="ingredientesNovos" id="ingredientesNovos"></textarea><br>
-       
-        Valor: <input type="text" id="valorNovo"><br>
-        <button onclick="criarProduto('${id}')">Finalizar</button>
-        <button onclick="cancelarcriasao('${id}')">Cancelar</button>
-       </div>
-        `;
-      }
-      function criarProduto(id) {
-        const nomeProduto = document
-          .getElementById("nomeDoProduto")
-          .value.trim();
-        const ingredientes = document
-          .getElementById("ingredientesNovos")
-          .value.trim();
-        const valor = document.getElementById("valorNovo").value.trim();
-        // const tipoProduto = document.getElementById("tipoProduto").value.trim();
-        const tipoProduto = id;
-        const elementorenderizar = document.getElementById(id);
-        const alterasao = {};
-        if (nomeProduto) {
-          alterasao.nomeProduto = nomeProduto;
-        }
-        if (ingredientes) {
-          alterasao.ingredientes = ingredientes;
-        }
-        if (valor) {
-          alterasao.valor = valor;
-        }
-        if (tipoProduto) {
-          alterasao.tipoProduto = tipoProduto;
-        }
-        fetch(`/produto/${ultimoElemento}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(alterasao),
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            const cardcriar = document.getElementById("novoproduto");
-            cardcriar.remove();
-            elementorenderizar.innerHTML += renderizarProduto(
-              response._id,
-              response.nomeProduto,
-              response.ingredientes,
-              response.valor
-            );
-          });
-        // } else {
-        //   alert(
-        //    "não é possivel criar o produto porque faltam algumas informações"
-        //  );
-        // }
-      }
     </script>
   </body>
-  <style>
-    #novoproduto {
-      display: flex;
-      width: 90%;
-      height: auto;
-      border: 1px solid black;
-      border-radius: 12px;
-      justify-content: start;
-      align-items: center;
-      flex-direction: column;
-      position: relative;
-    }
-    .botao-adicionar-produto {
-      display: flex;
-      position: absolute;
-      bottom: 0px;
-      width: 10%;
-      height: auto;
-      cursor: pointer;
-      justify-content: center;
-      align-items: center;
-      z-index: 0;
-      right: 50%;
-      border-radius: 12px;
-      margin-bottom: 1%;
-    }
-    .botao-deletar {
-      display: flex;
-      position: absolute;
-      right: 13%;
-      bottom: 1%;
-      border-radius: 12px;
-      background-color: red;
-      color: white;
-    }
-    .alterar {
-      width: 10%;
-      height: auto;
-      background-color: aliceblue;
-      display: flex;
-      right: 1%;
-      bottom: 2%;
-      position: absolute;
-      border-radius: 12px;
-      justify-content: center;
-      align-items: center;
-    }
-    body {
-      background-color: rgb(255, 239, 218);
-      overflow-x: hidden;
-      margin: 0;
-    }
-    .adicionar {
-      position: absolute;
-      display: flex;
-      right: 0px;
-      justify-content: center;
-      align-items: center;
-      top: 0px;
-      width: 20%;
-      height: auto;
-
-      flex-direction: column;
-    }
-    .botaosomar {
-      background-color: rgb(247, 243, 243);
-    }
-    .botaosubtrair {
-      background-color: rgb(247, 243, 243);
-    }
-    .botaodeletar {
-      background-color: rgb(230, 47, 47);
-      width: 70%;
-      height: auto;
-    }
-    .botaoadicionar {
-      background-color: rgb(18, 161, 18);
-      width: 70%;
-      height: auto;
-    }
-    .contador {
-      position: absolute;
-      display: flex;
-      right: 0px;
-      justify-content: center;
-      align-items: end;
-      top: 50%;
-      max-width: 12%;
-      height: auto;
-      margin: 1%;
-      flex-direction: row;
-      overflow-wrap: break-word;
-      flex-wrap: wrap;
-      border-radius: 12px;
-    }
-    #iconecart {
-      position: absolute;
-      display: flex;
-      right: 0px;
-      justify-content: end;
-      align-items: start;
-      top: 0px;
-      max-width: 20%;
-      height: auto;
-      margin: 2%;
-      flex-direction: row;
-    }
-    #logo {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-    h1 {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      font-size: 50px;
-      color: black;
-    }
-    #caixaCardapio {
-      display: flex;
-      flex-direction: column;
-      max-width: 100%;
-      height: auto;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-
-    .render-cards {
-      background-color: rgb(255, 251, 246);
-      display: grid;
-      position: relative;
-      grid-template-columns: subgrid;
-      width: 60%;
-      height: auto;
-      padding: 1%;
-      margin: 1%;
-      border: 1px solid black;
-      color: black;
-      border-radius: 12px;
-      flex-direction: row;
-      padding: 2%;
-    }
-
-    .cardProdutos {
-      display: flex;
-      justify-content: start;
-      position: relative;
-      padding: 1%;
-      border: 1px solid black;
-      margin-bottom: 1%;
-      flex-direction: column;
-      border-radius: 12px;
-      background-color: #fff;
-      flex-direction: column;
-    }
-    .nomeProdutos {
-      font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
-      font-style: oblique;
-    }
-    .ingredientes {
-      max-width: 50%;
-      height: auto;
-    }
-    .valor {
-      color: green;
-      font-weight: bold;
-    }
-    #botoescaixa {
-      max-width: 35%;
-      height: auto;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: row;
-      position: relative;
-      gap: 1%;
-      padding: 1%;
-      text-decoration: none;
-    }
-    .botoes {
-      display: flex;
-      background-color: antiquewhite;
-      width: 130px;
-      height: auto;
-      padding: 3%;
-      justify-content: center;
-      border-radius: 12px;
-      border: 1px solid black;
-      position: relative;
-      font-size: large;
-      text-decoration: none;
-      margin-right: 5%;
-      padding: 1%;
-    }
-    a {
-      text-decoration: none;
-    }
-  </style>
 </html>
